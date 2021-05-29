@@ -6,39 +6,55 @@ cTime = 0
 pTime = 0
 
 cap = cv2.VideoCapture(0)
-cap.set(3, 650)
-cap.set(4, 450)
+cap.set(3, 700)
+cap.set(4, 550)
 
 detector = htm.HandDetector()
 fingerTipIds = [4, 8, 12, 16, 20]
+
+
+def get_fingers(mylist):
+    fingers = []
+
+    if mylist[1][1] < mylist[17][1]:
+        # for thumb scenario will be different -> for left hand
+        if mylist[4][1] < mylist[3][1]:
+            fingers.append(1)
+        else:
+            fingers.append(0)
+
+    else:
+        # for thumb scenario will be different -> for right hand
+        if mylist[4][1] > mylist[3][1]:
+            fingers.append(1)
+        else:
+            fingers.append(0)
+
+    for i in range(1, 5):
+        if mylist[fingerTipIds[i]][2] < mylist[fingerTipIds[i] - 2][2]:
+            fingers.append(1)
+        else:
+            fingers.append(0)
+
+    return fingers.count(1)
+
 
 while True:
     ret_val, image = cap.read()
 
     ret_image = detector.find_hands(image)
-    lms_list = detector.find_position(ret_image)
+    lms_list1 = detector.find_position(ret_image, hand_num=0)
+    lms_list2 = detector.find_position(ret_image, hand_num=1)
 
-    if len(lms_list) > 0:
-        fingers = []
+    res_count = 0
+    if len(lms_list1) > 0:
+        res_count += get_fingers(lms_list1)
 
-        # for thumb scenario will be different -> for left hand
-        if lms_list[4][1] < lms_list[3][1]:
-            fingers.append(1)
-        else:
-            fingers.append(0)
+    if len(lms_list2) > 0:
+        res_count += get_fingers(lms_list2)
 
-        for i in range(1, 5):
-            if lms_list[fingerTipIds[i]][2] < lms_list[fingerTipIds[i] - 2][2]:
-                fingers.append(1)
-            else:
-                fingers.append(0)
-
-        totalFingers = fingers.count(1)
-        if totalFingers == 0:
-            totalFingers = 6
-        print(totalFingers)
-
-        cv2.putText(ret_image, str(totalFingers), (20, 350), cv2.FONT_HERSHEY_SIMPLEX, 5, (0, 0, 255), 5)
+    print(res_count)
+    cv2.putText(ret_image, str(res_count), (20, 350), cv2.FONT_HERSHEY_SIMPLEX, 5, (0, 0, 255), 5)
 
     cTime = time.time()
     fps = 1/(cTime - pTime)

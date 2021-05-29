@@ -34,12 +34,22 @@ class HandDetector():
         landmarks_list = []
 
         if self.results.multi_hand_landmarks:
-            selected_hand = self.results.multi_hand_landmarks[hand_num]
+           # print(f"total hands are {len(self.results.multi_hand_landmarks)}")
+            if hand_num == 0:
+                selected_hand = self.results.multi_hand_landmarks[hand_num]
 
-            for id, lm in enumerate(selected_hand.landmark):
-                h, w, _ = image.shape
-                cx, cy = int(lm.x * h), int(lm.y * w)
-                landmarks_list.append([id, cx, cy])
+                for id, lm in enumerate(selected_hand.landmark):
+                    h, w, _ = image.shape
+                    cx, cy = int(lm.x * h), int(lm.y * w)
+                    landmarks_list.append([id, cx, cy])
+
+            elif hand_num == 1 and len(self.results.multi_hand_landmarks) > 1:
+                selected_hand = self.results.multi_hand_landmarks[hand_num]
+
+                for id, lm in enumerate(selected_hand.landmark):
+                    h, w, _ = image.shape
+                    cx, cy = int(lm.x * h), int(lm.y * w)
+                    landmarks_list.append([id, cx, cy])
 
         return landmarks_list
 
